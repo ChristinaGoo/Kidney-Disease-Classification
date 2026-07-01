@@ -3,7 +3,7 @@ from cnnClassifier.components.data_ingestion import DataIngestion
 from cnnClassifier import logger
 
 
-STAGE_NAME = "Data Ingestion stage"
+STAGE_NAME = "Data Ingestion"
 
 class DataIngestionPipeline:
     def main(self):
@@ -16,8 +16,8 @@ class DataIngestionPipeline:
 if __name__ == "__main__":
     try:
         logger.info(f">>>>> stage {STAGE_NAME} started <<<<<")
-        obj = DataIngestionPipeline()
-        obj.main()
+        data_ingestion = DataIngestionPipeline()
+        data_ingestion.main()
         logger.info(f">>>>> stage {STAGE_NAME} completed!<<<<<\n\nx==========x")
     except Exception as e:
         logger.exception(e)

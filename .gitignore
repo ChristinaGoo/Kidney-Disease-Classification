@@ -98,3 +98,6 @@ kidney/
 
 # exclude pipeline-generated artifacts
 /artifacts/
+
+#exclude notes
+/notes/
