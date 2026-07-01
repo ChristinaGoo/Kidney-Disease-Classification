@@ -16,6 +16,7 @@ scipy
 Flask
 Flask-Cors
 gdown
+kaggle==1.6.17
 -e .
 
 
