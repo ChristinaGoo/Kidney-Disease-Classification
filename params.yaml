@@ -2,7 +2,7 @@ AUGMENTATION: True
 IMAGE_SIZE: [224, 224, 3] 
 BATCH_SIZE: 16
 INCLUDE_TOP: False # drop VGG16's original ImageNet classification FC Layer so a custom one can be added
-EPOCHS: 3 
+EPOCHS: 300 
 CLASSES: 2 
 WEIGHTS: imagenet 
 LEARNING_RATE: 0.01 
