@@ -1,7 +1,10 @@
 tensorflow==2.17.0
+tensorflow-metal
 pandas
 dvc
 mlflow==2.19.0
+dagshub
+python-dotenv
 notebook
 numpy
 matplotlib
