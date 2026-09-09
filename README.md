@@ -33,47 +33,49 @@ copy .env.example .env # Windows Command Prompt
 
 This command creates a copy of `.env.example` and names it `.env`, allowing you to configure your environment variables specific to your setup.
 
+`.env` includes `MLFLOW_TRACKING_URI`, `MLFLOW_TRACKING_USERNAME`, and `MLFLOW_TRACKING_PASSWORD` — credentials for logging experiment results to MLflow via DagsHub. See [Experiment Tracking](#experiment-tracking-mlflow--dagshub) below for what they're used for and where to get your own.
 
-## Project Organization
 
+## Experiment Tracking (MLflow + DagsHub)
+
+The Model Evaluation stage (`src/cnnClassifier/components/model_evaluation_mlflow.py`) logs each run's params and metrics (loss, accuracy) to [MLflow](https://mlflow.org/), remotely hosted on [DagsHub](https://dagshub.com/). This happens automatically whenever `main.py` reaches the evaluation stage — no separate command needed.
+
+To view your logged runs, go to the **Experiments** tab of your DagsHub repo, e.g. `https://dagshub.com/<your-dagshub-username>/Kidney-Disease-Classification/experiments`.
+
+Credentials are read from `.env` (see above). To get your own:
+1. Create a repo on [DagsHub](https://dagshub.com/) (or connect an existing GitHub repo).
+2. On the repo page, open the **Remote** dropdown → **Experiments**, which shows your `MLFLOW_TRACKING_URI` and a code snippet with the env vars to set.
+3. For `MLFLOW_TRACKING_PASSWORD`, generate a token under your DagsHub **Settings → Tokens**.
+
+Paste these into `.env` as `MLFLOW_TRACKING_URI`, `MLFLOW_TRACKING_USERNAME`, and `MLFLOW_TRACKING_PASSWORD`.
+
+
+## Pipeline (DVC)
+
+The pipeline stages are defined in `dvc.yaml` (work in progress — currently only `data_ingestion` is wired up).
+
+```bash
+dvc init          # one-time: initializes the DVC repo (creates .dvc/)
+dvc repro         # runs any pipeline stage whose deps/params/code changed since the last run
+dvc dag           # prints the pipeline stage graph
+dvc status        # shows which stages are out of date without running them
+dvc metrics show  # prints tracked metrics (e.g. scores.json) for the current checkout
+dvc metrics diff  # compares tracked metrics against a previous commit/branch
 ```
-├── LICENSE            <- Open-source license if one is chosen
-├── README.md          <- The top-level README for developers using this project
-├── data
-│   ├── external       <- Data from third party sources
-│   ├── interim        <- Intermediate data that has been transformed
-│   ├── processed      <- The final, canonical data sets for modeling
-│   └── raw            <- The original, immutable data dump
-│
-├── models             <- Trained and serialized models, model predictions, or model summaries
-│
-├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-│                         the creator's initials, and a short `-` delimited description, e.g.
-│                         `1.0-jqp-initial-data-exploration`
-│
-├── references         <- Data dictionaries, manuals, and all other explanatory materials
-│
-├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-│   └── figures        <- Generated graphics and figures to be used in reporting
-│
-└── src                         <- Source code for this project
-    │
-    ├── __init__.py             <- Makes src a Python module
-    │
-    ├── config.py               <- Store useful variables and configuration
-    │
-    ├── dataset.py              <- Scripts to download or generate data
-    │
-    ├── features.py             <- Code to create features for modeling
-    │
-    │    
-    ├── modeling                
-    │   ├── __init__.py 
-    │   ├── predict.py          <- Code to run model inference with trained models          
-    │   └── train.py            <- Code to train models
-    │
-    ├── plots.py                <- Code to create visualizations 
-    │
-    └── services                <- Service classes to connect with external platforms, tools, or APIs
-        └── __init__.py 
-```
+
+`dvc repro` is what you run instead of `python main.py` once the pipeline is fully wired up — it only reruns stages whose declared `deps`/`params` actually changed, skipping the rest.
+
+
+
+
+## Workflows
+
+1. Update config.yaml
+2. Update secrets.yaml
+3. Update params.yaml
+4. Update the entity
+5. Update the configuration manager in src config
+6. Update the components
+7. Update the pipeline
+8. Update main.py
+9. Update dvc.yaml
