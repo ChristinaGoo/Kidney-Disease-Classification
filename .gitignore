@@ -99,5 +99,8 @@ kidney/
 # exclude pipeline-generated artifacts
 /artifacts/
 
+# exclude runtime prediction input saved by app.py's /predict route
+/inputImage.jpg
+
 #exclude notes
 /notes/
