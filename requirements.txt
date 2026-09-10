@@ -1,5 +1,6 @@
 tensorflow==2.17.0
 tensorflow-metal; sys_platform == "darwin"
+requests>=2.31.0,<3.0.0
 pandas
 dvc
 mlflow==2.19.0
