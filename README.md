@@ -70,6 +70,49 @@ dvc metrics diff  # compares tracked metrics against a previous commit/branch
 
 
 
+## Dockerization & CI/CD (GitHub Actions + AWS ECR)
+
+The app is containerized (see `Dockerfile`) and deployed via a GitHub Actions pipeline (`.github/main.yaml`) that builds the image, pushes it to Amazon ECR, and deploys it to an EC2 instance.
+
+### 1. AWS setup (one-time)
+
+1. **IAM user** — create a user with programmatic access and attach:
+   - `AmazonEC2ContainerRegistryFullAccess`
+   - `AmazonEC2FullAccess`
+2. **ECR repository** — create a private repo to store the built image; note its URI (`<account-id>.dkr.ecr.<region>.amazonaws.com/<repo-name>`).
+3. **EC2 instance** — launch an instance (Ubuntu) that will run the container; install Docker on it:
+   ```bash
+   sudo apt-get update -y && sudo apt-get upgrade -y
+   curl -fsSL https://get.docker.com -o get-docker.sh
+   sudo sh get-docker.sh
+   sudo usermod -aG docker ubuntu
+   newgrp docker
+   ```
+4. **Self-hosted runner** — in the GitHub repo, go to **Settings → Actions → Runners → New self-hosted runner** and follow the shown commands on the EC2 instance to register it. This lets the deployment job run directly on EC2.
+
+### 2. GitHub repo secrets
+
+Add these under **Settings → Secrets and variables → Actions**:
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION`
+- `AWS_ECR_LOGIN_URI` (registry URI, e.g. `<account-id>.dkr.ecr.<region>.amazonaws.com`)
+- `ECR_REPOSITORY_NAME`
+
+### 3. Pipeline stages (`.github/main.yaml`, triggered on push to `main`)
+
+1. **Continuous Integration** — checkout code, lint, run unit tests (currently placeholder `echo` steps — to be filled in).
+2. **Continuous Delivery** — authenticate to ECR, build the Docker image, tag it `latest`, push it to the ECR repo.
+3. **Continuous Deployment** — runs on the self-hosted EC2 runner: pulls the latest image from ECR, runs it (`docker run -d -p 8080:8080 ...`) with AWS credentials injected as env vars, then prunes old images/containers.
+
+### 4. Running locally with Docker
+
+```bash
+docker build -t kidney-disease-classifier .
+docker run -p 8080:8080 kidney-disease-classifier
+```
+
 ## Workflows
 
 1. Update config.yaml
