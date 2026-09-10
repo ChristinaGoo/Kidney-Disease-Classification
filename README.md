@@ -49,6 +49,8 @@ Credentials are read from `.env` (see above). To get your own:
 
 Paste these into `.env` as `MLFLOW_TRACKING_URI`, `MLFLOW_TRACKING_USERNAME`, and `MLFLOW_TRACKING_PASSWORD`.
 
+See [reports/model_evaluation.md](reports/model_evaluation.md) for current model results and known limitations.
+
 
 ## Pipeline (DVC)
 

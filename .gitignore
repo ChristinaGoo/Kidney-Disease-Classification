@@ -89,9 +89,6 @@ target/
 # Exclude virtual environment
 kidney/
 
-# Exclude trained models
-/models/
-
 # exclude data from source control by default
 /data/*
 !/data/.gitkeep
