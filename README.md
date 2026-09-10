@@ -72,7 +72,7 @@ dvc metrics diff  # compares tracked metrics against a previous commit/branch
 
 ## Dockerization & CI/CD (GitHub Actions + AWS ECR)
 
-The app is containerized (see `Dockerfile`) and deployed via a GitHub Actions pipeline (`.github/main.yaml`) that builds the image, pushes it to Amazon ECR, and deploys it to an EC2 instance.
+The app is containerized (see `Dockerfile`) and deployed via a GitHub Actions pipeline (`.github/workflows/main.yaml`) that builds the image, pushes it to Amazon ECR, and deploys it to an EC2 instance.
 
 ### 1. AWS setup (one-time)
 
@@ -100,7 +100,7 @@ Add these under **Settings → Secrets and variables → Actions**:
 - `AWS_ECR_LOGIN_URI` (registry URI, e.g. `<account-id>.dkr.ecr.<region>.amazonaws.com`)
 - `ECR_REPOSITORY_NAME`
 
-### 3. Pipeline stages (`.github/main.yaml`, triggered on push to `main`)
+### 3. Pipeline stages (`.github/workflows/main.yaml`, triggered on push to `main`)
 
 1. **Continuous Integration** — checkout code, lint, run unit tests (currently placeholder `echo` steps — to be filled in).
 2. **Continuous Delivery** — authenticate to ECR, build the Docker image, tag it `latest`, push it to the ECR repo.
