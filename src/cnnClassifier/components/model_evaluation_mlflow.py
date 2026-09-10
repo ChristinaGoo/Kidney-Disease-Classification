@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import tensorflow as tf
 from pathlib import Path
 from urllib.parse import urlparse
@@ -44,10 +45,25 @@ class Evaluation:
         self.model = self.load_model(self.config.path_of_model)
         self._valid_generator()
         self.score = self.model.evaluate(self.valid_generator)
+        self._per_class_recall()
         self.save_score()
 
+    def _per_class_recall(self):
+        # plain accuracy is misleading on an imbalanced dataset (a model that always
+        # predicts the majority class scores ~69% "accuracy" without learning anything);
+        # per-class recall exposes that a class is never being predicted correctly
+        y_true = self.valid_generator.classes
+        y_pred = np.argmax(self.model.predict(self.valid_generator), axis=-1)
+        class_names = list(self.valid_generator.class_indices.keys())
+
+        self.per_class_recall = {}
+        for class_idx, name in enumerate(class_names):
+            mask = y_true == class_idx
+            recall = float((y_pred[mask] == class_idx).mean()) if mask.any() else 0.0
+            self.per_class_recall[f"{name.lower()}_recall"] = recall
+
     def save_score(self):
-        scores = {"loss": self.score[0], "accuracy": self.score[1]}
+        scores = {"loss": self.score[0], "accuracy": self.score[1], **self.per_class_recall}
         save_json(path=Path("scores.json"), data=scores)
 
     def log_into_mlflow(self):
@@ -58,7 +74,8 @@ class Evaluation:
             mlflow.log_params(self.config.all_params)
             mlflow.log_metrics({
                 "loss": self.score[0],
-                "accuracy": self.score[1]
+                "accuracy": self.score[1],
+                **self.per_class_recall
             })
 
             if tracking_url_type_store != "file":

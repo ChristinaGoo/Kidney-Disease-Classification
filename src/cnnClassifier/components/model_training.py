@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import tensorflow as tf
 from pathlib import Path
 from zipfile import ZipFile
@@ -77,13 +78,20 @@ class Training:
     def train(self):
         self.steps_per_epoch = self.train_generator.samples // self.train_generator.batch_size
         self.validation_steps = self.valid_generator.samples // self.valid_generator.batch_size
-        
+
+        # dataset is class-imbalanced (~69% Normal / ~31% Tumor); without this the model
+        # can minimize loss by just always predicting the majority class
+        class_counts = np.bincount(self.train_generator.classes)
+        n_classes = len(class_counts)
+        class_weight = {i: len(self.train_generator.classes) / (n_classes * count) for i, count in enumerate(class_counts)}
+
         self.model.fit(
             self.train_generator,
             epochs=self.config.params_epochs,
             steps_per_epoch=self.steps_per_epoch,
             validation_steps=self.validation_steps,
-            validation_data=self.valid_generator)
+            validation_data=self.valid_generator,
+            class_weight=class_weight)
         
         self.save_model(
             path=self.config.trained_model_path, 
